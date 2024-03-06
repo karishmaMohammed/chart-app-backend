@@ -1,4 +1,4 @@
-const express = require('express');
+
 const expressAsyncHandler = require('express-async-handler');
 const {userModelSchema} = require('../modals/userModel');
 const generateToken = require('../Config/generateToken');
@@ -15,6 +15,7 @@ const loginController = expressAsyncHandler(async(req, res) => {
             token: generateToken(user._id),
         })
     }else{
+        res.status(401);
         throw new Error("Invalid username or password")
     }
 })
@@ -56,9 +57,26 @@ const registerController = expressAsyncHandler(
        }
 )
 
+const fetchAllUsersController = expressAsyncHandler(async(req, res) => {
+    const keyword = req.query.search
+    ? {
+        $or: [
+            {name : {$regex: req.query.search, $options: "i"}},
+            {email: {$regex: req.query.search, $options: "i"}},
+        ],
+    } : 
+    {};
+    
+    const users = await userModelSchema.find(keyword).find({
+        _id: { $ne: req.user._id },
+    });
+    res.send(users);
+});
+
 
 
 module.exports ={
     loginController,
-    registerController
-}
+    registerController,
+    fetchAllUsersController,
+};
