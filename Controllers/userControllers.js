@@ -26,7 +26,7 @@ const registerController = expressAsyncHandler(
        //  check for all fields
            if(!name || !email || !password){
                res.send(400);
-               throw Error("All fields need to be filled")
+               throw new Error("All fields need to be filled")
            }
        
            // pre existing user
@@ -42,13 +42,22 @@ const registerController = expressAsyncHandler(
            // create an entry in DB for user
            const user = await userModelSchema.create({name, email, password });
            if(user){
-            res.status(200).json({
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                isAdmin: user.isAdmin,
-                token: generateToken(user._id)            
-            });
+            // res.status(200).json({
+            //     _id: user._id,
+            //     name: user.name,
+            //     email: user.email,
+            //     isAdmin: user.isAdmin,
+            //     token: generateToken(user._id)            
+            // });
+           let responseData = {
+                meta: {
+                    code: 200,
+                    success: true,
+                    message: 'SUCCESS',
+                },
+            };
+    
+            return res.status(responseData.meta.code).json(responseData); 
            }
            else{
             res.status(400)
